@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Flight Genius Primary Color Scale - Based on Logo Blue */
+  --genius-50: #eff6ff;
+  --genius-100: #dbeafe;
+  --genius-200: #bfdbfe;
+  --genius-300: #93c5fd;
+  --genius-400: #60a5fa;
+  --genius-500: #3b82f6;  /* Primary - Logo Blue */
+  --genius-600: #2563eb;
+  --genius-700: #1d4ed8;
+  --genius-800: #1e40af;
+  --genius-900: #1e3a8a;
+  --genius-950: #172554;
+  
+  /* Accent Colors */
+  --genius-sky: #0ea5e9;      /* Lighter sky blue */
+  --genius-ocean: #0284c7;    /* Deep ocean blue */
+  --genius-sunset: #f59e0b;   /* Warm sunset orange for CTAs */
+  --genius-cloud: #f0f9ff;    /* Very light blue for backgrounds */
+  --genius-night: #0c4a6e;    /* Dark blue for headers */
+  
+  /* Functional Colors */
+  --genius-success: #10b981;
+  --genius-warning: #f59e0b;
+  --genius-error: #ef4444;
+  --genius-info: #3b82f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Genius Color Scale */
+  --color-genius-50: var(--genius-50);
+  --color-genius-100: var(--genius-100);
+  --color-genius-200: var(--genius-200);
+  --color-genius-300: var(--genius-300);
+  --color-genius-400: var(--genius-400);
+  --color-genius-500: var(--genius-500);
+  --color-genius-600: var(--genius-600);
+  --color-genius-700: var(--genius-700);
+  --color-genius-800: var(--genius-800);
+  --color-genius-900: var(--genius-900);
+  --color-genius-950: var(--genius-950);
+  
+  /* Accent Colors */
+  --color-genius-sky: var(--genius-sky);
+  --color-genius-ocean: var(--genius-ocean);
+  --color-genius-sunset: var(--genius-sunset);
+  --color-genius-cloud: var(--genius-cloud);
+  --color-genius-night: var(--genius-night);
+  
+  /* Functional Colors */
+  --color-genius-success: var(--genius-success);
+  --color-genius-warning: var(--genius-warning);
+  --color-genius-error: var(--genius-error);
+  --color-genius-info: var(--genius-info);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* --background: #0a0a0a; */
+    /* --foreground: #ededed; */
+    
+    /* Adjust genius colors for dark mode */
+    --genius-50: #172554;
+    --genius-100: #1e3a8a;
+    --genius-200: #1e40af;
+    --genius-300: #1d4ed8;
+    --genius-400: #2563eb;
+    --genius-500: #3b82f6;
+    --genius-600: #60a5fa;
+    --genius-700: #93c5fd;
+    --genius-800: #bfdbfe;
+    --genius-900: #dbeafe;
+    --genius-950: #eff6ff;
+    
+    --genius-cloud: #1e293b;
+    --genius-night: #cbd5e1;
+  }
+}
+
+body {
+  /* background: var(--background); */
+  /* color: var(--foreground); */
+  font-family: Arial, Helvetica, sans-serif;
+}
