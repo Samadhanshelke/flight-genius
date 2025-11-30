@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { MdFlight, MdLocationOn, MdCalendarToday, MdPeople, MdSearch, MdAdd } from "react-icons/md";
+import Header from "../components/Header";
 
 interface FlightSegment {
   id: number;
@@ -36,22 +37,24 @@ export default function Home() {
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Hero Section with Black Background */}
-      <div className="relative bg-black pb-24">
-        {/* Navigation */}
-        <nav className="relative z-20 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Flight Genius Logo"
-                width={200}
-                height={200}
-                className="rounded-lg"
-              />
-            </div>
-          </div>
-        </nav>
+      {/* Hero Section with Background Image */}
+      <div className="relative pb-24">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={`/hero-bg.avif`}
+            alt="Flight Hero Background"
+            fill 
+            className="object-cover"
+            priority
+            unoptimized
+          />
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
+
+        {/* Header Component */}
+        <Header />
 
         {/* Hero Title */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-4 pb-16">
