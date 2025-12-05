@@ -7,7 +7,7 @@ export default function Header() {
         {/* Logo */}
         <div className="flex items-center gap-3">
           <Image
-            src={`/logo.png?v=${Date.now()}`}
+            src="/logo.png"
             alt="Flight Genius Logo"
             width={200}
             height={200}

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MdFlight, MdLocationOn, MdCalendarToday, MdPeople, MdSearch, MdAdd } from "react-icons/md";
 import Header from "../components/Header";
 
@@ -13,14 +14,25 @@ interface FlightSegment {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [tripType, setTripType] = useState<'roundtrip' | 'oneway' | 'multicity'>('roundtrip');
   const [cabinClass, setCabinClass] = useState('economy');
   const [passengers, setPassengers] = useState({ adults: 1, children: 0, infants: 0 });
   const [showPassengers, setShowPassengers] = useState(false);
+  
+  // Form state for single trip
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
+  
+  // Multi-city state
   const [flightSegments, setFlightSegments] = useState<FlightSegment[]>([
     { id: 1, from: '', to: '', date: '' },
     { id: 2, from: '', to: '', date: '' }
   ]);
+
+  const [isSearching, setIsSearching] = useState(false);
 
   const totalPassengers = passengers.adults + passengers.children + passengers.infants;
 
@@ -34,6 +46,67 @@ export default function Home() {
       setFlightSegments(flightSegments.filter(s => s.id !== id));
     }
   };
+
+  const updateFlightSegment = (id: number, field: 'from' | 'to' | 'date', value: string) => {
+    setFlightSegments(flightSegments.map(s => 
+      s.id === id ? { ...s, [field]: value } : s
+    ));
+  };
+
+  const handleSearch = () => {
+    setIsSearching(true);
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    params.append('tripType', tripType);
+    params.append('cabinClass', cabinClass);
+    params.append('adults', String(passengers.adults));
+    params.append('children', String(passengers.children));
+    params.append('infants', String(passengers.infants));
+
+    if (tripType === 'multicity') {
+      // Validate multi-city flights
+      const validFlights = flightSegments.filter(s => s.from && s.to && s.date);
+      if (validFlights.length < 2) {
+        alert('Please fill in at least 2 flight segments for multi-city search.');
+        setIsSearching(false);
+        return;
+      }
+      params.append('multiCityFlights', encodeURIComponent(JSON.stringify(validFlights)));
+    } else {
+      // Validate single trip
+      if (!from || !to || !departureDate) {
+        alert('Please fill in all required fields (From, To, and Departure Date).');
+        setIsSearching(false);
+        return;
+      }
+      if (tripType === 'roundtrip' && !returnDate) {
+        alert('Please select a return date for round trip.');
+        setIsSearching(false);
+        return;
+      }
+      
+      params.append('from', from);
+      params.append('to', to);
+      params.append('departureDate', departureDate);
+      if (returnDate) {
+        params.append('returnDate', returnDate);
+      }
+    }
+
+    // Navigate to search results page
+    router.push(`/search?${params.toString()}`);
+  };
+
+  // Popular routes for quick selection
+  const popularRoutes = [
+    { from: 'JFK', to: 'CUN', label: 'New York → Cancun' },
+    { from: 'JFK', to: 'HNL', label: 'New York → Honolulu' },
+    { from: 'LAX', to: 'HNL', label: 'Los Angeles → Honolulu' },
+    { from: 'JFK', to: 'CDG', label: 'New York → Paris' },
+    { from: 'LAX', to: 'NRT', label: 'Los Angeles → Tokyo' },
+    { from: 'LAX', to: 'LHR', label: 'Los Angeles → London' },
+  ];
 
   return (
     <div className="bg-white min-h-screen">
@@ -131,8 +204,10 @@ export default function Home() {
                 </label>
                 <input
                   type="text"
-                  placeholder="City or Airport"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm"
+                  placeholder="City or Airport (e.g., JFK, LAX)"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                 />
               </div>
 
@@ -144,8 +219,10 @@ export default function Home() {
                 </label>
                 <input
                   type="text"
-                  placeholder="City or Airport"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm"
+                  placeholder="City or Airport (e.g., CUN, CDG)"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                 />
               </div>
 
@@ -157,7 +234,10 @@ export default function Home() {
                 </label>
                 <input
                   type="date"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm"
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                 />
               </div>
 
@@ -170,7 +250,10 @@ export default function Home() {
                   </label>
                   <input
                     type="date"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm"
+                    value={returnDate}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                    min={departureDate || new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                   />
                 </div>
               )}
@@ -190,7 +273,7 @@ export default function Home() {
 
                 {/* Passenger Dropdown */}
                 {showPassengers && (
-                  <div className="absolute top-full mt-2 w-full bg-white border border-gray-300 rounded-lg p-4 z-20">
+                  <div className="absolute top-full mt-2 w-full bg-white border border-gray-300 rounded-lg p-4 z-20 shadow-lg">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-black font-medium text-sm">Adults</span>
@@ -283,6 +366,12 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+                    <button
+                      onClick={() => setShowPassengers(false)}
+                      className="w-full mt-4 py-2 bg-genius-500 text-white rounded-lg text-sm font-medium hover:bg-genius-400 transition-colors"
+                    >
+                      Done
+                    </button>
                   </div>
                 )}
               </div>
@@ -316,7 +405,9 @@ export default function Home() {
                         <input
                           type="text"
                           placeholder="City or Airport"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm"
+                          value={segment.from}
+                          onChange={(e) => updateFlightSegment(segment.id, 'from', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                         />
                       </div>
 
@@ -329,7 +420,9 @@ export default function Home() {
                         <input
                           type="text"
                           placeholder="City or Airport"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm"
+                          value={segment.to}
+                          onChange={(e) => updateFlightSegment(segment.id, 'to', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black placeholder-black/50 text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                         />
                       </div>
 
@@ -341,7 +434,10 @@ export default function Home() {
                         </label>
                         <input
                           type="date"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm"
+                          value={segment.date}
+                          onChange={(e) => updateFlightSegment(segment.id, 'date', e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200 text-black text-sm focus:border-genius-500 focus:ring-2 focus:ring-genius-500/20"
                         />
                       </div>
                     </div>
@@ -374,7 +470,7 @@ export default function Home() {
 
                   {/* Passenger Dropdown */}
                   {showPassengers && (
-                    <div className="absolute top-full mt-2 w-full bg-white border border-gray-300 rounded-lg p-4 z-20">
+                    <div className="absolute top-full mt-2 w-full bg-white border border-gray-300 rounded-lg p-4 z-20 shadow-lg">
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
                           <span className="text-black font-medium text-sm">Adults</span>
@@ -467,6 +563,12 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
+                      <button
+                        onClick={() => setShowPassengers(false)}
+                        className="w-full mt-4 py-2 bg-genius-500 text-white rounded-lg text-sm font-medium hover:bg-genius-400 transition-colors"
+                      >
+                        Done
+                      </button>
                     </div>
                   )}
                 </div>
@@ -475,10 +577,43 @@ export default function Home() {
           )}
 
           {/* Search Button */}
-          <button className="w-full bg-genius-500 hover:bg-genius-400 text-white py-4 rounded-xl font-medium text-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer mt-2">
-            <MdSearch size={24} />
-            Search Flights
+          <button 
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="w-full bg-genius-500 hover:bg-genius-400 disabled:bg-genius-300 text-white py-4 rounded-xl font-medium text-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer mt-2"
+          >
+            {isSearching ? (
+              <>
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Searching...
+              </>
+            ) : (
+              <>
+                <MdSearch size={24} />
+                Search Flights
+              </>
+            )}
           </button>
+
+          {/* Popular Routes */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">Popular Routes</h3>
+            <div className="flex flex-wrap gap-2">
+              {popularRoutes.map((route, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setFrom(route.from);
+                    setTo(route.to);
+                    setTripType('roundtrip');
+                  }}
+                  className="px-4 py-2 bg-gray-100 hover:bg-genius-50 hover:text-genius-600 rounded-full text-sm text-gray-700 transition-colors cursor-pointer"
+                >
+                  {route.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
