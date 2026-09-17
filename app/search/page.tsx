@@ -345,7 +345,7 @@ function SearchResultsContent() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <Header />
+      <Header variant="light" />
       
       {/* Search Summary Bar */}
       <div className="bg-white shadow-sm border-b">

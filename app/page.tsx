@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MdFlight, MdLocationOn, MdCalendarToday, MdPeople, MdSearch, MdAdd } from "react-icons/md";
 import Header from "../components/Header";
+import { useToast } from "../components/Toaster";
 
 interface FlightSegment {
   id: number;
@@ -15,6 +16,7 @@ interface FlightSegment {
 
 export default function Home() {
   const router = useRouter();
+  const { toast } = useToast();
   const [tripType, setTripType] = useState<'roundtrip' | 'oneway' | 'multicity'>('roundtrip');
   const [cabinClass, setCabinClass] = useState('economy');
   const [passengers, setPassengers] = useState({ adults: 1, children: 0, infants: 0 });
@@ -68,7 +70,7 @@ export default function Home() {
       // Validate multi-city flights
       const validFlights = flightSegments.filter(s => s.from && s.to && s.date);
       if (validFlights.length < 2) {
-        alert('Please fill in at least 2 flight segments for multi-city search.');
+        toast('Please fill in at least 2 flight segments for multi-city search.');
         setIsSearching(false);
         return;
       }
@@ -76,12 +78,12 @@ export default function Home() {
     } else {
       // Validate single trip
       if (!from || !to || !departureDate) {
-        alert('Please fill in all required fields (From, To, and Departure Date).');
+        toast('Please fill in all required fields (From, To, and Departure Date).');
         setIsSearching(false);
         return;
       }
       if (tripType === 'roundtrip' && !returnDate) {
-        alert('Please select a return date for round trip.');
+        toast('Please select a return date for round trip.');
         setIsSearching(false);
         return;
       }
